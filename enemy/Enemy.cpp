@@ -14,17 +14,26 @@ void Enemy::Initialize(Model* model, Vector3& position)
 
 void Enemy::Update()
 { 
-	worldTransform_.UpdateMatrix();
-
-	// 敵の移動ベクトル
 	Vector3 move = {0, 0, 0};
-
-	// 敵の移動の速さ
 	const float kCharacterSpeed = -0.2f;
 
-	move.z += kCharacterSpeed;
-
+	switch (phase_) {
+	case Phase::Approach:
+	default:
+		// 移動 (ベクトルを加算)
+		move.z += kCharacterSpeed;
+		// 規定の位置に到達したら離脱
+		if (worldTransform_.translation_.z < 0.0f) {
+			phase_ = Phase::Leave;
+		}
+		break;
+	case Phase::Leave:
+		move.x += kCharacterSpeed;
+		move.y -= kCharacterSpeed;
+		break;
+	}
 	worldTransform_.translation_ = Add(worldTransform_.translation_, move);
+	worldTransform_.UpdateMatrix();
 }
 
 void Enemy::Draw(ViewProjection& viewProjection)
