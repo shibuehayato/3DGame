@@ -33,7 +33,7 @@ void GameScene::Initialize() {
 	// 敵キャラの生成
 	enemy_ = new Enemy();
 	// 敵キャラの座標
-	Vector3 position{0, 0, 50};
+	Vector3 position{20, 0, 50};
 	enemy_->Initialize(model_, position);
 
 	// ビュープロジェクションの初期化

@@ -96,6 +96,9 @@
     <ClCompile Include="enemy\Enemy.cpp">
       <Filter>ソース ファイル\enemy</Filter>
     </ClCompile>
+    <ClCompile Include="enemy\EnemyBullet.cpp">
+      <Filter>ソース ファイル\enemy</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3d\ViewProjection.h">
@@ -195,6 +198,9 @@
       <Filter>ヘッダー ファイル\player</Filter>
     </ClInclude>
     <ClInclude Include="enemy\Enemy.h">
+      <Filter>ヘッダー ファイル\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="enemy\EnemyBullet.h">
       <Filter>ヘッダー ファイル\enemy</Filter>
     </ClInclude>
   </ItemGroup>
