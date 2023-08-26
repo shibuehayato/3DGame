@@ -13,6 +13,19 @@ Vector3 Add(Vector3 v1, Vector3 v2) {
 	return num;
 }
 
+Vector3 Subtract(Vector3 v1, Vector3 v2) {
+	Vector3 num;
+
+	float a[3] = {v1.x, v1.y, v1.z};
+	float b[3] = {v2.x, v2.y, v2.z};
+
+	num.x = a[0] - b[0];
+	num.y = a[1] - b[1];
+	num.z = a[2] - b[2];
+
+	return num;
+}
+
 Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m) 
 {
 	
@@ -215,4 +228,27 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rot, const Vecto
 	    MakeScaleMatrix(scale), Multiply(MakeRotateMatrix(rot), MakeTranslateMatrix(translate)));
 
 	return result;
+}
+
+// 正規化
+Vector3 Normalize(const Vector3 v1)
+{
+	Vector3 num;
+	float length = sqrtf(v1.x * v1.x + v1.y * v1.y + v1.z * v1.z);
+
+	float newX = v1.x;
+	float newY = v1.y;
+	float newZ = v1.z;
+
+	if (length != 0.0f) {
+		newX = v1.x / length;
+		newY = v1.y / length;
+		newZ = v1.z / length;
+	}
+
+	num.x = newX;
+	num.y = newY;
+	num.z = newZ;
+
+	return num;
 }

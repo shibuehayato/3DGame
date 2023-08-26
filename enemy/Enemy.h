@@ -4,6 +4,9 @@
 #include "EnemyBullet.h"
 #include <list>
 
+// 自機クラスの前方宣言
+class Player;
+
 // 行動フェーズ
 enum class Phase {
 	Approach, // 接近する
@@ -29,6 +32,10 @@ public:
 	// 接近フェーズ初期化
 	void ApproachInitialize();
 
+	void SetPlayer(Player* player) { player_ = player; }
+
+    Vector3 GetWorldPosition();
+
 private:
 	WorldTransform worldTransform_;
 	Model* model_ = nullptr;
@@ -39,4 +46,6 @@ private:
 	std::list<EnemyBullet*> bullets_;
 	// 発射タイマー
 	int32_t fireTimer = 0;
+	// 自キャラ
+	Player* player_ = nullptr;
 };
