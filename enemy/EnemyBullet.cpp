@@ -22,15 +22,15 @@ void EnemyBullet::Initialize(Model* model, const Vector3& position, const Vector
 
 void EnemyBullet::Update()
 {
-	// 時間経過でデス
-	if (--deathTimer_ <= 0) {
-		isDead_ = true;
-	}
+	worldTransform_.UpdateMatrix();
 
 	// 座標を移動させる (1フレーム分の移動量を足しこむ)
 	worldTransform_.translation_ = Add(worldTransform_.translation_, velocity_);
 
-	worldTransform_.UpdateMatrix();
+	// 時間経過でデス
+	if (--deathTimer_ <= 0) {
+		isDead_ = true;
+	}
 }
 
 void EnemyBullet::Draw(const ViewProjection& viewProjection)
