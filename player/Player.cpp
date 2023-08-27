@@ -148,3 +148,5 @@ Vector3 Player::GetWorldPosition()
 
 	return worldPos;
 }
+
+void Player::OnCollision() {}
