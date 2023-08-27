@@ -19,20 +19,14 @@ void Enemy::Initialize(Model* model, Vector3& position)
 	textureHandle_ = TextureManager::Load("uvChecker.png");
 	worldTransform_.Initialize();
 	worldTransform_.translation_ = position;
-
 	// 接近フェーズ初期化
 	ApproachInitialize();
 }
 
 void Enemy::Update()
 { 
-	// 弾更新
-	for (EnemyBullet* bullet : bullets_) {
-		bullet->Update();
-	}
-
 	Vector3 move = {0, 0, 0};
-	const float kCharacterSpeed = -0.2f;
+	const float kCharacterSpeed = -0.002f;
 
 	switch (phase_) {
 	case Phase::Approach:
@@ -59,12 +53,26 @@ void Enemy::Update()
 		move.y -= kCharacterSpeed;
 		break;
 	}
-	
+
+		// デスフラグの立った弾を削除
+	bullets_.remove_if([](EnemyBullet* bullet) {
+		if (bullet->IsDead()) {
+			delete bullet;
+			return true;
+		}
+		return false;
+	});
+
+	// 弾更新
+	for (EnemyBullet* bullet : bullets_) {
+		bullet->Update();
+	}
+
 	worldTransform_.translation_ = Add(worldTransform_.translation_, move);
 	worldTransform_.UpdateMatrix();
 }
 
-void Enemy::Draw(ViewProjection& viewProjection)
+void Enemy::Draw(ViewProjection viewProjection)
 { 
 	model_->Draw(worldTransform_, viewProjection, textureHandle_);
 

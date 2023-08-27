@@ -21,7 +21,7 @@ public:
 
 	void Update();
 
-	void Draw(ViewProjection& viewProjection);
+	void Draw(ViewProjection viewProjection);
 
 	// 弾発射
 	void Fire();
