@@ -26,7 +26,7 @@ void Enemy::Initialize(Model* model, Vector3& position)
 void Enemy::Update()
 { 
 	Vector3 move = {0, 0, 0};
-	const float kCharacterSpeed = -0.002f;
+	const float kCharacterSpeed = 0;
 
 	switch (phase_) {
 	case Phase::Approach:

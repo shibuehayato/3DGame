@@ -11,7 +11,7 @@ class Player {
 public:
 	~Player();
 
-	void Initialize(Model* model, uint32_t textureHandle);
+	void Initialize(Model* model, uint32_t textureHandle, Vector3 position);
 
 	void Update();
 
@@ -29,6 +29,12 @@ public:
 
 		// 弾リストを取得
 	const std::list<PlayerBullet*>& GetBullets() const { return bullets_; }
+
+	/// <summary>
+	/// 親となるワールドトランスフォームをセット
+	/// </summary>
+	/// <param name="parent">親となるワールドトランスフォームをセット</param>
+	void SetParent(const WorldTransform* parent);
 
 private:
 	// ワールド変換データ

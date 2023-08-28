@@ -10,14 +10,15 @@ Player::~Player()
 	}
 }
 
-void Player::Initialize(Model* model, uint32_t textureHandle)
-{ 
+void Player::Initialize(Model* model, uint32_t textureHandle, Vector3 position) { 
 	model_ = model; 
 	textureHandle_ = textureHandle;
 	worldTransform_.Initialize();
 	
 	// シングルトンインスタンスを取得する
 	input_ = Input::GetInstance();
+
+	worldTransform_.translation_ = Add(worldTransform_.translation_, position);
 };
 
 void Player::Update()
@@ -52,6 +53,9 @@ void Player::Update()
 		move.y -= kCharacterSpeed;
 	}
 
+	// 座標移動 (ベクトルの加算)
+	worldTransform_.translation_ = Add(worldTransform_.translation_, move);
+
 	Rotate();
 
 	// キャラクターの攻撃処理
@@ -62,9 +66,6 @@ void Player::Update()
 		bullet->Update();
 	}
 
-	// 行列を定数バッファに転送
-	worldTransform_.UpdateMatrix();
-
 	// 移動限界座標
 	const float kMoveLimitX = 30;
 	const float kMoveLimitY = 18;
@@ -73,9 +74,6 @@ void Player::Update()
 	worldTransform_.translation_.x = min(worldTransform_.translation_.x, +kMoveLimitX);
 	worldTransform_.translation_.y = max(worldTransform_.translation_.y, -kMoveLimitY);
 	worldTransform_.translation_.y = min(worldTransform_.translation_.y, +kMoveLimitY);
-
-	// 座標移動 (ベクトルの加算)
-	worldTransform_.translation_ = Add(worldTransform_.translation_, move);
 
 		// キャラクターの座標を画面表示する処理
 	float moves[3] = {
@@ -92,6 +90,9 @@ void Player::Update()
 	worldTransform_.translation_.x = moves[0];
 	worldTransform_.translation_.y = moves[1];
 	worldTransform_.translation_.z = moves[2];
+
+	// 行列を定数バッファに転送
+	worldTransform_.UpdateMatrix();
 
 };
 
@@ -150,3 +151,9 @@ Vector3 Player::GetWorldPosition()
 }
 
 void Player::OnCollision() {}
+
+void Player::SetParent(const WorldTransform* parent)
+{
+	// 親子関係を結ぶ
+	worldTransform_.parent_ = parent;
+}
