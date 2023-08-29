@@ -4,6 +4,9 @@
 #include "EnemyBullet.h"
 #include <list>
 
+// GameSceneの前方宣言 
+class GameScene;
+
 // 自機クラスの前方宣言
 class Player;
 
@@ -15,7 +18,6 @@ enum class Phase {
 
 class Enemy {
 public:
-	~Enemy();
 
 	void Initialize(Model* model, Vector3& position);
 
@@ -40,7 +42,9 @@ public:
 	void OnCollision();
 
 	// 弾リストを取得
-	const std::list<EnemyBullet*>& GetBullets() const { return bullets_; }
+	//const std::list<EnemyBullet*>& GetBullets() const { return bullets_; }
+
+	void SetGameScene(GameScene* gameScene) { gameScene_ = gameScene; }
 
 private:
 	WorldTransform worldTransform_;
@@ -49,9 +53,11 @@ private:
 	// フェーズ
 	Phase phase_ = Phase::Approach;
 	// 弾
-	std::list<EnemyBullet*> bullets_;
+	//std::list<EnemyBullet*> bullets_;
 	// 発射タイマー
 	int32_t fireTimer = 0;
 	// 自キャラ
 	Player* player_ = nullptr;
+	// ゲームシーン
+	GameScene* gameScene_ = nullptr;
 };

@@ -14,6 +14,12 @@ GameScene::~GameScene()
 	delete skydome_;
 	delete modelSkydome_;
 	delete railCamera_;
+
+	for (EnemyBullet* bullet : enemyBullets_)
+	{
+		delete bullet;
+	}
+
 }
 
 void GameScene::Initialize() {
@@ -41,6 +47,8 @@ void GameScene::Initialize() {
 	// 敵キャラの座標
 	Vector3 position{20, 0, 50};
 	enemy_->Initialize(model_, position);
+	// 敵キャラにゲームシーンを渡す
+	enemy_->SetGameScene(this);
 
 	// 3Dモデルの生成
 	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
@@ -76,6 +84,20 @@ void GameScene::Update() {
 
 	// 敵キャラの更新
 	enemy_->Update();
+
+	// 弾更新
+	for (EnemyBullet* bullet : enemyBullets_) {
+		bullet->Update();
+	}
+
+	// デスフラグの立った弾を削除
+	enemyBullets_.remove_if([](EnemyBullet* bullet) {
+		if (bullet->IsDead()) {
+			delete bullet;
+			return true;
+		}
+		return false;
+	});
 
 	// 天球の更新
 	skydome_->Update();
@@ -141,6 +163,11 @@ void GameScene::Draw() {
 	// 敵キャラの描画
 	enemy_->Draw(viewProjection_);
 
+	for (EnemyBullet* bullet : enemyBullets_)
+	{
+		bullet->Draw(viewProjection_);
+	}
+
 	// 天球の描画
 	skydome_->Draw(viewProjection_);
 
@@ -173,15 +200,13 @@ void GameScene::CheckAllCollision() {
 
 	// 自弾リストの取得
 	const std::list<PlayerBullet*>& playerBullets = player_->GetBullets();
-	// 敵弾リストの取得
-	const std::list<EnemyBullet*>& enemyBullets = enemy_->GetBullets();
 
 #pragma region 自キャラと敵弾の当たり判定
 	// 自キャラの座標
 	posA = player_->GetWorldPosition();
 
 	// 自キャラと敵弾全ての当たり判定
-	for (EnemyBullet* bullet : enemyBullets) {
+	for (EnemyBullet* bullet : enemyBullets_) {
 		// 敵弾の座標
 		posB = bullet->GetWorldPosition();
 
@@ -224,7 +249,7 @@ void GameScene::CheckAllCollision() {
 #pragma region 自弾と敵弾の当たり判定
 	// 自弾と敵弾全ての当たり判定
 	for (PlayerBullet* pbullet : playerBullets) {
-		for (EnemyBullet* ebullet : enemyBullets) {
+		for (EnemyBullet* ebullet : enemyBullets_) {
 			// 自弾の座標
 			posA = pbullet->GetWorldPosition();
 			// 敵弾の座標
@@ -244,4 +269,10 @@ void GameScene::CheckAllCollision() {
 		}
 	}
 #pragma endregion
+}
+
+void GameScene::AddEnemyBullet(EnemyBullet* enemyBullet)
+{
+	// リストに登録する
+	enemyBullets_.push_back(enemyBullet);
 }
