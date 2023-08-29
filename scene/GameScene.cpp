@@ -52,7 +52,7 @@ void GameScene::Initialize() {
 	// レールカメラの生成
 	railCamera_ = new RailCamera();
 	// レールカメラの初期化
-	railCamera_->Initialize({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f});
+	railCamera_->Initialize({0.0f, 0.0f, -50.0f}, {0.0f, 0.0f, 0.0f});
 
 	// 敵キャラに自キャラのアドレスを渡す
 	enemy_->SetPlayer(player_);
