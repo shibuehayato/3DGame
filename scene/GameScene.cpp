@@ -2,6 +2,7 @@
 #include "TextureManager.h"
 #include <cassert>
 #include "AxisIndicator.h"
+#include <fstream>
 
 GameScene::GameScene() {}
 
@@ -46,14 +47,16 @@ void GameScene::Initialize() {
 	// 自キャラの初期化
 	player_->Initialize(model_, textureHandle_, {0, 0, 30});
 
+	LoadEnemyPopData();
+
 	// 敵キャラの生成
-	enemy_ = new Enemy();
-	enemys_.push_back(enemy_);
-	// 敵キャラの座標
-	Vector3 position{20, 0, 50};
-	enemy_->Initialize(model_, position);
-	// 敵キャラにゲームシーンを渡す
-	enemy_->SetGameScene(this);
+	//enemy_ = new Enemy();
+	//enemys_.push_back(enemy_);
+	//// 敵キャラの座標
+	//Vector3 position{20, 0, 50};
+	//enemy_->Initialize(model_, position);
+	//// 敵キャラにゲームシーンを渡す
+	//enemy_->SetGameScene(this);
 
 	// 3Dモデルの生成
 	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
@@ -68,7 +71,7 @@ void GameScene::Initialize() {
 	railCamera_->Initialize({0.0f, 0.0f, -50.0f}, {0.0f, 0.0f, 0.0f});
 
 	// 敵キャラに自キャラのアドレスを渡す
-	enemy_->SetPlayer(player_);
+	//enemy_->SetPlayer(player_);
 	
 	// デバッグカメラの生成
 	debugCamera_ = new DebugCamera(50, 50);
@@ -86,6 +89,8 @@ void GameScene::Update() {
 
 	// 自キャラの更新
 	player_->Update();
+
+	UpdateEnemyPopCommands();
 
 	// 敵キャラの更新
 	for (Enemy* enemy : enemys_)
@@ -245,22 +250,24 @@ void GameScene::CheckAllCollision() {
 
 #pragma region 自弾と敵キャラの当たり判定
 	// 敵キャラの座標
-	posA = enemy_->GetWorldPosition();
-	// 敵キャラと自弾全ての当たり判定
-	for (PlayerBullet* bullet : playerBullets) {
-		// 自弾の座標
-		posB = bullet->GetWorldPosition();
+	for (Enemy* enemy : enemys_) {
+		posA = enemy->GetWorldPosition();
+		// 敵キャラと自弾全ての当たり判定
+		for (PlayerBullet* bullet : playerBullets) {
+			// 自弾の座標
+			posB = bullet->GetWorldPosition();
 
-		Vector3 distance = {
-		    (posA.x - posB.x) * (posA.x - posB.x), (posA.y - posB.y) * (posA.y - posB.y),
-		    (posA.z - posB.z) * (posA.z - posB.z)};
-		// 球と球の交差判定
-		if (distance.x + distance.y + distance.z <=
-		    (enemyRadius + playerBulletRadius) * (enemyRadius + playerBulletRadius)) {
-			// 敵キャラの衝突時コールバック関数を呼び出す
-			enemy_->OnCollision();
-			// 自弾の衝突時コールバック関数を呼び出す
-			bullet->OnCollision();
+			Vector3 distance = {
+			    (posA.x - posB.x) * (posA.x - posB.x), (posA.y - posB.y) * (posA.y - posB.y),
+			    (posA.z - posB.z) * (posA.z - posB.z)};
+			// 球と球の交差判定
+			if (distance.x + distance.y + distance.z <=
+			    (enemyRadius + playerBulletRadius) * (enemyRadius + playerBulletRadius)) {
+				// 敵キャラの衝突時コールバック関数を呼び出す
+				enemy_->OnCollision();
+				// 自弾の衝突時コールバック関数を呼び出す
+				bullet->OnCollision();
+			}
 		}
 	}
 #pragma endregion
@@ -294,4 +301,88 @@ void GameScene::AddEnemyBullet(EnemyBullet* enemyBullet)
 {
 	// リストに登録する
 	enemyBullets_.push_back(enemyBullet);
+}
+
+void GameScene::LoadEnemyPopData()
+{
+	// ファイルを開く
+	std::ifstream file;
+	file.open("Resources/enemyPop.csv");
+	assert(file.is_open());
+
+	// ファイルの内容を文字列ストリームにコピー
+	enemyPopCommands << file.rdbuf();
+	
+	// ファイルを閉じる
+	file.close();
+}
+
+void GameScene::UpdateEnemyPopCommands() {
+	// 待機処理
+	if (isStay_) {
+		waitingTimer_--;
+		if (waitingTimer_ <= 0) {
+			// 待機完了
+			isStay_ = false;
+		}
+		return;
+	}
+
+	// 1行分の文字列を入れる変数
+	std::string line;
+
+	// コマンド実行ループ
+	while (getline(enemyPopCommands, line)) {
+		// 1行分の文字列をストリームに変換して解析しやすくする
+		std::istringstream line_stream(line);
+
+		std::string word;
+		// ,区切りで行の先頭文字列を取得
+		getline(line_stream, word, ',');
+
+		// "//"から始まる行はコメント
+		if (word.find("//") == 0) {
+			// コメント行を飛ばす
+			continue;
+		}
+
+		// POPコマンド
+		if (word.find("POP") == 0) {
+			// x座標
+			getline(line_stream, word, ',');
+			float x = (float)std::atof(word.c_str());
+
+			// y座標
+			getline(line_stream, word, ',');
+			float y = (float)std::atof(word.c_str());
+
+			// z座標
+			getline(line_stream, word, ',');
+			float z = (float)std::atof(word.c_str());
+
+			// 敵キャラの生成
+			enemy_ = new Enemy();
+			enemys_.push_back(enemy_);
+			// 敵キャラの座標
+			enemy_->Initialize(model_, Vector3(x, y, z));
+			// 敵キャラにゲームシーンを渡す
+			enemy_->SetGameScene(this);
+			// 敵キャラに自キャラのアドレスを渡す
+			enemy_->SetPlayer(player_);
+		}
+		// WAITコマンド
+		else if (word.find("WAIT") == 0) {
+			getline(line_stream, word, ',');
+
+			// 待ち時間
+			int32_t waitTime = atoi(word.c_str());
+
+			// 待機開始
+			isStay_ = true;
+			waitingTimer_ = waitTime;
+
+			// コマンドループを抜ける
+			break;
+		}
+	}
 }
