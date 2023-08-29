@@ -10,7 +10,6 @@ GameScene::~GameScene()
 	delete player_;
 	delete model_;
 	delete debugCamera_;
-	delete enemy_;
 	delete skydome_;
 	delete modelSkydome_;
 	delete railCamera_;
@@ -18,6 +17,11 @@ GameScene::~GameScene()
 	for (EnemyBullet* bullet : enemyBullets_)
 	{
 		delete bullet;
+	}
+
+	for (Enemy* enemy : enemys_)
+	{
+		delete enemy;
 	}
 
 }
@@ -44,6 +48,7 @@ void GameScene::Initialize() {
 
 	// 敵キャラの生成
 	enemy_ = new Enemy();
+	enemys_.push_back(enemy_);
 	// 敵キャラの座標
 	Vector3 position{20, 0, 50};
 	enemy_->Initialize(model_, position);
@@ -83,7 +88,18 @@ void GameScene::Update() {
 	player_->Update();
 
 	// 敵キャラの更新
-	enemy_->Update();
+	for (Enemy* enemy : enemys_)
+	{
+		enemy->Update();
+	}
+
+	enemys_.remove_if([](Enemy* enemy) {
+		if (enemy->IsDead()) {
+			delete enemy;
+			return true;
+		}
+		return false;
+	});
 
 	// 弾更新
 	for (EnemyBullet* bullet : enemyBullets_) {
@@ -161,7 +177,10 @@ void GameScene::Draw() {
 	player_->Draw(viewProjection_);
 
 	// 敵キャラの描画
-	enemy_->Draw(viewProjection_);
+	for (Enemy* enemy : enemys_)
+	{
+		enemy->Draw(viewProjection_);
+	}
 
 	for (EnemyBullet* bullet : enemyBullets_)
 	{

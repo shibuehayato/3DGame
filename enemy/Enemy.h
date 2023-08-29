@@ -46,6 +46,8 @@ public:
 
 	void SetGameScene(GameScene* gameScene) { gameScene_ = gameScene; }
 
+	bool IsDead() const { return isDead_; }
+
 private:
 	WorldTransform worldTransform_;
 	Model* model_ = nullptr;
@@ -60,4 +62,6 @@ private:
 	Player* player_ = nullptr;
 	// ゲームシーン
 	GameScene* gameScene_ = nullptr;
+	// デスフラグ
+	bool isDead_ = false;
 };

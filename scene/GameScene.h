@@ -52,9 +52,6 @@ public: // メンバ関数
 
 	void AddEnemyBullet(EnemyBullet* enemyBullet);
 
-	// 弾リストを取得
-	const std::list<EnemyBullet*>& GetBullets() const { return enemyBullets_; }
-
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -92,6 +89,9 @@ private: // メンバ変数
 
 	// 弾
 	std::list<EnemyBullet*> enemyBullets_;
+
+	// 敵
+	std::list<Enemy*> enemys_;
 
 	/// <summary>
 	/// ゲームシーン用
