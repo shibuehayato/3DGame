@@ -34,3 +34,7 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rot, const Vecto
 Vector3 Normalize(const Vector3 v1);
 
 Matrix4x4 Inverse(const Matrix4x4& m1);
+
+Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth);
+
+Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);

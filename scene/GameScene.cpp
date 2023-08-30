@@ -33,6 +33,9 @@ void GameScene::Initialize() {
 	input_ = Input::GetInstance();
 	audio_ = Audio::GetInstance();
 
+	// レティクルのテクスチャ
+	TextureManager::Load("reticle.png");
+
 	// ファイル名を指定してテクスチャを読み込む
 	textureHandle_ = TextureManager::Load("player.png");
 
@@ -49,15 +52,6 @@ void GameScene::Initialize() {
 
 	LoadEnemyPopData();
 
-	// 敵キャラの生成
-	//enemy_ = new Enemy();
-	//enemys_.push_back(enemy_);
-	//// 敵キャラの座標
-	//Vector3 position{20, 0, 50};
-	//enemy_->Initialize(model_, position);
-	//// 敵キャラにゲームシーンを渡す
-	//enemy_->SetGameScene(this);
-
 	// 3Dモデルの生成
 	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
 	// 天球の生成
@@ -69,9 +63,6 @@ void GameScene::Initialize() {
 	railCamera_ = new RailCamera();
 	// レールカメラの初期化
 	railCamera_->Initialize({0.0f, 0.0f, -50.0f}, {0.0f, 0.0f, 0.0f});
-
-	// 敵キャラに自キャラのアドレスを渡す
-	//enemy_->SetPlayer(player_);
 	
 	// デバッグカメラの生成
 	debugCamera_ = new DebugCamera(50, 50);
@@ -88,7 +79,7 @@ void GameScene::Initialize() {
 void GameScene::Update() {
 
 	// 自キャラの更新
-	player_->Update();
+	player_->Update(viewProjection_);
 
 	UpdateEnemyPopCommands();
 
@@ -206,6 +197,8 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに前景スプライトの描画処理を追加できる
 	/// </summary>
+
+	player_->DrawUI();
 
 	// スプライト描画後処理
 	Sprite::PostDraw();

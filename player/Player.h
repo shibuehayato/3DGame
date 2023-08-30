@@ -4,8 +4,7 @@
 #include "Input.h"
 #include "PlayerBullet.h"
 #include <list>
-
-
+#include "Sprite.h"
 
 class Player {
 public:
@@ -13,7 +12,7 @@ public:
 
 	void Initialize(Model* model, uint32_t textureHandle, Vector3 position);
 
-	void Update();
+	void Update(ViewProjection& viewProjection);
 
 	void Draw(ViewProjection& viewProjection);
 
@@ -36,6 +35,11 @@ public:
 	/// <param name="parent">親となるワールドトランスフォームをセット</param>
 	void SetParent(const WorldTransform* parent);
 
+    /// <summary>
+    /// UI描画
+    /// </summary>
+	void DrawUI();
+
 private:
 	// ワールド変換データ
 	WorldTransform worldTransform_;
@@ -47,4 +51,9 @@ private:
 	Input* input_ = nullptr;
 	// 弾
 	std::list<PlayerBullet*> bullets_;
+	// 3Dレティクル用ワールドトランスフォーム
+	WorldTransform worldTransform3DReticle_;
+	// 2Dレティクル用スプライト
+	Sprite* sprite2Dreticle_ = nullptr;
+	Vector2 ReticlePos_;
 };
