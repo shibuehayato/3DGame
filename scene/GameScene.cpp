@@ -33,9 +33,6 @@ void GameScene::Initialize() {
 	input_ = Input::GetInstance();
 	audio_ = Audio::GetInstance();
 
-	// レティクルのテクスチャ
-	TextureManager::Load("reticle.png");
-
 	// ファイル名を指定してテクスチャを読み込む
 	textureHandle_ = TextureManager::Load("player.png");
 

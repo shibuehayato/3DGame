@@ -5,6 +5,7 @@
 #include "PlayerBullet.h"
 #include <list>
 #include "Sprite.h"
+#include "Matrix.h"
 
 class Player {
 public:
@@ -22,6 +23,8 @@ public:
 
 	// ワールド座標を取得
 	Vector3 GetWorldPosition();
+
+	void GetMousePos(ViewProjection viewProjection);
 
 	// 衝突を検出したら呼び出されるコールバック関数
 	void OnCollision();

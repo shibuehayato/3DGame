@@ -37,14 +37,6 @@ void Player::Initialize(Model* model, uint32_t textureHandle, Vector3 position) 
 };
 
 void Player::Update(ViewProjection& viewProjection) {
-	// デスフラグの立った弾を削除
-	bullets_.remove_if([](PlayerBullet* bullet) {
-		if (bullet->IsDead()) {
-			delete bullet;
-			return true;
-		}
-		return false;
-	});
 
 	// キャラクターの移動ベクトル
 	Vector3 move = {0, 0, 0};
@@ -69,17 +61,7 @@ void Player::Update(ViewProjection& viewProjection) {
 
 	// 座標移動 (ベクトルの加算)
 	worldTransform_.translation_ = Add(worldTransform_.translation_, move);
-
-	Rotate();
-
-	// キャラクターの攻撃処理
-	Attack();
-
-	// 弾更新
-	for (PlayerBullet* bullet : bullets_) {
-		bullet->Update();
-	}
-
+	
 	// 自機のワールド座標から3Dレティクルのワールド座標を計算
 	{
 		// 自機から3Dレティクルへの距離
@@ -97,28 +79,51 @@ void Player::Update(ViewProjection& viewProjection) {
 		worldTransform3DReticle_.translation_.x = offset.x + worldTransform_.matWorld_.m[3][0];
 		worldTransform3DReticle_.translation_.y = offset.y + worldTransform_.matWorld_.m[3][1];
 		worldTransform3DReticle_.translation_.z = offset.z + worldTransform_.matWorld_.m[3][2];
-
+		
 		worldTransform3DReticle_.UpdateMatrix();
+		worldTransform3DReticle_.TransferMatrix();
 	}
-
+	
 	// 3Dレティクルのワールド座標から2Dレティクルのスクリーン座標を計算
 	{
 		Vector3 positionReticle;
 		positionReticle.x = worldTransform3DReticle_.matWorld_.m[3][0];
 		positionReticle.y = worldTransform3DReticle_.matWorld_.m[3][1];
 		positionReticle.z = worldTransform3DReticle_.matWorld_.m[3][2];
-
+	
 		// ビューポート行列
-		Matrix4x4 matViewport = MakeViewportMatrix(0, 0, WinApp::kWindowWidth, WinApp::kWindowHeight, 0, 1);
+		Matrix4x4 matViewport =
+		    MakeViewportMatrix(0, 0, WinApp::kWindowWidth, WinApp::kWindowHeight, 0, 1);
 
 		// ビュー行列とプロジェクション行列、ビューポート行列を合成する
-		Matrix4x4 matViewprojectionViewport = Multiply(viewProjection.matView, Multiply(viewProjection.matProjection, matViewport));
+		Matrix4x4 matViewprojectionViewport =
+		    Multiply(viewProjection.matView, Multiply(viewProjection.matProjection, matViewport));
 
 		// ワールド→スクリーン座標変換 (ここで3Dから2Dになる)
 		positionReticle = Transform(positionReticle, matViewprojectionViewport);
 
 		// スプライトのレティクルに座標設定
 		sprite2Dreticle_->SetPosition(Vector2(positionReticle.x, positionReticle.y));
+
+		GetMousePos(viewProjection);
+		Rotate();
+
+		// キャラクターの攻撃処理
+		Attack();
+	
+		// 弾更新
+		for (PlayerBullet* bullet : bullets_) {
+			bullet->Update();
+		}
+
+		// デスフラグの立った弾を削除
+		bullets_.remove_if([](PlayerBullet* bullet) {
+			if (bullet->IsDead()) {
+				delete bullet;
+				return true;
+			}
+			return false;
+		});
 	}
 
 	// 移動限界座標
@@ -227,3 +232,48 @@ void Player::SetParent(const WorldTransform* parent)
 }
 
 void Player::DrawUI() { sprite2Dreticle_->Draw(); }
+
+void Player::GetMousePos(ViewProjection viewProjection) {
+	POINT mousePosition;
+
+	GetCursorPos(&mousePosition);
+
+	HWND hwnd = WinApp::GetInstance()->GetHwnd();
+
+	ScreenToClient(hwnd, &mousePosition);
+
+	Vector2 Reticle;
+	Reticle.x = static_cast<float>(mousePosition.x);
+	Reticle.y = static_cast<float>(mousePosition.y);
+	sprite2Dreticle_->SetPosition(Reticle);
+	
+	Matrix4x4 matVPV = Multiply(
+	    viewProjection.matView,
+	    Multiply(
+	        viewProjection.matProjection,
+	        MakeViewportMatrix(0, 0, WinApp::kWindowWidth, WinApp::kWindowHeight, 0, 1)));
+
+	Matrix4x4 matInveresVPV = Inverse(matVPV);
+
+	Vector3 PosNear = Vector3(float(Reticle.x), float(Reticle.y), 0);
+	Vector3 PosFar = Vector3(float(Reticle.x), float(Reticle.y), 1);
+
+	PosNear = Transform(PosNear, matInveresVPV);
+	PosFar = Transform(PosFar, matInveresVPV);
+
+	Vector3 mouseDirection = Add(PosFar, PosNear);
+	mouseDirection = Normalize(mouseDirection);
+
+	const float kDistanceTestobject = 50.0f;
+	worldTransform3DReticle_.translation_.x = PosNear.x + mouseDirection.x * kDistanceTestobject;
+	worldTransform3DReticle_.translation_.y = PosNear.y + mouseDirection.y * kDistanceTestobject;
+	worldTransform3DReticle_.translation_.z = PosNear.z + mouseDirection.z * kDistanceTestobject;
+
+	worldTransform3DReticle_.UpdateMatrix();
+	worldTransform3DReticle_.TransferMatrix();
+
+	ImGui::Begin("Player");
+	ImGui::Text("Near:(%+.2f,%+.2f,%.2f)", PosNear.x, PosNear.y, PosNear.z);
+	ImGui::Text("Far:(%+.2f,%+.2f,%.2f)", PosFar.x, PosFar.y, PosFar.z);
+	ImGui::End();
+}
