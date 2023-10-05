@@ -254,7 +254,7 @@ void GameScene::CheckAllCollision() {
 			if (distance.x + distance.y + distance.z <=
 			    (enemyRadius + playerBulletRadius) * (enemyRadius + playerBulletRadius)) {
 				// 敵キャラの衝突時コールバック関数を呼び出す
-				enemy_->OnCollision();
+				enemy->OnCollision();
 				// 自弾の衝突時コールバック関数を呼び出す
 				bullet->OnCollision();
 			}
